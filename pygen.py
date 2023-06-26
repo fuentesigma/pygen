@@ -339,19 +339,20 @@ def run_simulation(X0, k, l0, D, eta, gamma, a, S, dt, n_steps, cell_events, fil
     dset = f.create_dataset("cell_positions", (1, N_cells, 3), maxshape=maxshape, dtype='f')
     for step in range(n_steps):
         # Compute cell positions
-        X, X_prev, cell_event_idx = cell_evolution(X, 
-                                                   X_prev, 
-                                                   k, 
-                                                   l0, 
-                                                   D, 
-                                                   eta, 
-                                                   gamma, 
-                                                   a,  
-                                                   S, 
-                                                   dt, 
-                                                   step, 
-                                                   cell_event_idx, 
-                                                   cell_events)
+        X, X_prev, cell_event_idx, a, k, gamma  = cell_evolution(
+                                                    X, 
+                                                    X_prev, 
+                                                    k, 
+                                                    l0, 
+                                                    D, 
+                                                    eta, 
+                                                    gamma, 
+                                                    a,  
+                                                    S, 
+                                                    dt, 
+                                                    step, 
+                                                    cell_event_idx, 
+                                                    cell_events)
         # Resize the dataset to accommodate the new data
         dset.resize((step + 1, X.shape[0], 3))
         # Store the current positions in the HDF5 file

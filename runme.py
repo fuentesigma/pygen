@@ -29,6 +29,8 @@ def welcome_title():
 
 def main(args):
     # /////////////////////////// #
+    np.random.seed(42)
+    # /////////////////////////// #
     # Initial number of cells
     N_cells = args.C
     # Number of simulation steps
@@ -43,13 +45,14 @@ def main(args):
     # Cell-cell equilibrium distance
     l0 = 1
     # Cell-cell adhesion
-    k = 1e-2 * np.ones((N_cells))
+    k = 2 * np.ones((N_cells))
+    #k = 1e-2 * np.random.normal(size=N_cells)
     # Cell-fluid friction
     eta = 1e-6
     # Cell-cell repulsion
-    a = 1e-3 * np.ones((N_cells))
+    a = 1e-2 * np.ones((N_cells))
     # Cell-tissue surface tension
-    gamma = 2 * np.ones((N_cells))
+    gamma = 5 * np.ones((N_cells))
     # Cell diffusion coefficient
     D = 1e-3
     # Cell division and death rates
