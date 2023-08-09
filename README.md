@@ -6,8 +6,8 @@ PyGen is a dynamic cellular simulation tool designed for modelling cellular inte
 
 Ensure you have the following packages installed:
 
-- Numpy
-- Scipy
+- numpy
+- scipy
 - h5py
 - imageio
 - vispy
