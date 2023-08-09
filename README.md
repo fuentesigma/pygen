@@ -59,6 +59,8 @@ To use PyGen, follow these steps:
     - `beltrami`
     - `cylinder`
 
+Alternatively, you can import or generate your own point clouds utilising the notebook `generate_points.ipynb` within tools.
+
 ### Tweaking Additional Parameters:
 
 Within `runme.py`, users can adjust several parameters for more refined simulations:
