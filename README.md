@@ -78,7 +78,7 @@ Adjust these parameters as needed to fit your specific requirements.
 
 For any further queries or issues, feel free to open an issue on this repository or contact the maintainer.
 
-jesus.fuentes [at] uni [dot] Luxembourg ccTLD
+jesus [dot] fuentes [at] uni [dot] [Luxembourg ccTLD]
 
 
 
