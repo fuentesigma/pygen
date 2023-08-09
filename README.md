@@ -46,9 +46,9 @@ To use PyGen, follow these steps:
     - `offline`: For larger simulations. Records the evolution in a file before visualization.
     - `file`: To visualize pre-recorded simulations.
   
-- **initial_number_of_cells**: The initial number of cells in the ensemble.
+- **initial_number_of_cells**: The initial number of cells in the ensemble. (Integer value.)
   
-- **time_steps**: Define the number of simulation steps. (Integer value)
+- **time_steps**: Define the number of simulation steps. (Integer value.)
 
 - **geometric_background**: Specifies the target geometry of the tissue architecture. Options include:
     - `sphere`
