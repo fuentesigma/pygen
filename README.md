@@ -78,6 +78,26 @@ Within `runme.py`, users can adjust several parameters for more refined simulati
 
 Adjust these parameters as needed to fit your specific requirements.
 
+## Example
+
+Within runme.py tweak these parameters
+
+```python
+    l0 = 1e-2
+    k = 1e-2 * np.ones((N_cells))
+    a = 1e-2 * np.ones((N_cells))
+    gamma = 1 * np.ones((N_cells))
+    division, death = 100, 50
+```
+
+Open a terminal window, go to the folder's project and execute the following command line:
+
+>  python runme.py --type file --C 500 --S 3000 --B foil
+
+This will execute a simulation file containing 500 cells evolving over a foil background. In the simulation, 100 cells will be divided, while 50 of them will be killed.
+
+### Maintenance
+
 For any further queries or issues, feel free to open an issue on this repository or contact the maintainer.
 
 jesus [dot] fuentes [at] uni [dot] [Luxembourg ccTLD]
