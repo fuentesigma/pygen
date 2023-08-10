@@ -205,6 +205,35 @@ def force_to_surface(Xi, S, gamma):
     force = gamma * (S[closest_point_idx] - Xi)
     return force
 
+# Compute neighbouring force
+def neighbouring_force(X, X_prev, neighbors, A_opt=5, alpha=1e-4):
+    """
+    Compute the topological force on each cell.
+    * X is a 2D array of cell positions at time t.
+    * X_prev is a 2D array of cell positions at time t-1.
+    * neighbors is a list of lists, where neighbors[i] is a list of the indices of cell i's neighbors.
+    * A_opt is the optimal number of neighbors for each cell.
+    * alpha is a constant force that determines the strength of the penalty for deviating from the optimal 
+    number of neighbours. It increases the force whenever a cell has too few or too many 
+    neighbours. In the model, cells "want" to minimise their energy, so they will move 
+    in a way that brings them closer to the optimal number of neighbours. If a cell has 
+    too few neighbours, it is "encouraged" to move closer to other cells. Conversely, 
+    if a cell has too many neighbours, it is "encouraged" to move away from some of them.
+    """
+    N = len(X)
+    # Prepare an array to store the forces
+    F = np.zeros_like(X)
+    # For each cell
+    for i in range(N):
+        # Compute the difference between the optimal number of neighbors and the actual number of neighbors
+        delta_A = A_opt - len(neighbors[i])
+        # Compute the vector from cell i's position at time t-1 to its position at time t
+        r_i = X[i] - X_prev[i]
+        # Add the contribution of cell i's change in position to the force on cell i
+        F[i] = -alpha * np.sign(delta_A) * r_i
+    # Return the forces
+    return F
+
 # //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 # Compute forces on all cells
 def compute_forces(X, X_prev, k, l0, eta, gamma, a, S, dt, neighbors):
@@ -224,6 +253,8 @@ def compute_forces(X, X_prev, k, l0, eta, gamma, a, S, dt, neighbors):
     d = S.shape[1]
     # Compute the bandwidth using Scott's rule
     sigma = M**(-1. / (d + 4))
+    # Adjust surface tension
+    gamma = 10 * gamma
     # Pairwise elastic forces and constraints
     for i in range(N):
         for j in neighbors[i]:
@@ -240,8 +271,10 @@ def compute_forces(X, X_prev, k, l0, eta, gamma, a, S, dt, neighbors):
         """
         # 1. Background constraints
         geometry = geometric_force_density(X[i], S, gamma[i], sigma)
-        surface = force_to_surface(X[i], S, 0.5*gamma[i])
-        curvature = mean_curvature_force(X[i], S, 5*gamma[i], 6)
+        surface = force_to_surface(X[i], S, 0.5 * gamma[i])
+        curvature = mean_curvature_force(X[i], S, 5.0 * gamma[i], 6)
+        # 2. Connectivity corrections
+        # connectivity = neighbouring_force(X, X_prev, neighbors)
         # Compute the total force
         forces[i] += geometry + surface + curvature
     # Denoise the forces
@@ -272,9 +305,9 @@ def cell_evolution(X, X_prev, k, l0, D, eta, gamma, a, S, dt, step, cell_event_i
     """
     # Set the division offset. It is estimated based on empirical data or 
     # through trial-and-error to match the expected biological behaviour
-    division_offset = 0.25
+    division_offset = 0.1
     # Set an initial seed for reproducibility
-    np.random.seed(999999)
+    #np.random.seed(42)
     # Check size of the input
     N, d = X.shape
     # Add or remove cells from the simulation

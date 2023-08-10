@@ -10,6 +10,8 @@ import playback as pb
 import simulation as sim
 
 def welcome_title():
+    import os
+    os.system('cls' if os.name == 'nt' else 'clear')
     print(""
     "==================================================\n"
     "    _______  __   __  _______  _______  __    _   \n"
@@ -29,47 +31,77 @@ def welcome_title():
 
 def main(args):
     # /////////////////////////// #
-    np.random.seed(42)
+    #np.random.seed(42)
     # /////////////////////////// #
+    """
+        Command-line arguments/parameters
+        C: Initial number of cells
+        S: Number of simulation steps
+        B: Background option for the simulation
+    """
     # Initial number of cells
     N_cells = args.C
     # Number of simulation steps
     n_steps = args.S
     # Background option
-    bg = args.B
-    # /////////////////////////// #
-    S = np.loadtxt("data/" + str(bg) + ".txt")
-    # /////////////////////////// #
+    geometry = args.B
+    # Load background geometry
+    S = np.loadtxt("data/" + str(geometry) + ".txt")
+
+    """ 
+        Adjustable parameters for the simulation
+        l0: Cell-cell equilibrium distance
+        k: Cell-cell adhesion
+        a: Cell-cell repulsion
+        gamma: Cell-tissue surface tension
+        division: Integer number of cell divisions
+        death: Integer number of cell deaths
+    """
+    l0 = 1e-2
+    k = 1e-2 * np.ones((N_cells))
+    #k = 5e-2 * np.random.normal(0, 1, N_cells)
+    a = 1e-2 * np.ones((N_cells))
+    gamma = 1 * np.ones((N_cells))
+    division, death = 100, 50
+    
+    """
+        Fixed parameters for the simulation
+        dt: Time step
+        eta: Cell-fluid friction
+        D: Cell diffusion coefficient
+    """
     # Time step
     dt = 1e-3
-    # Cell-cell equilibrium distance
-    l0 = 1
-    # Cell-cell adhesion
-    k = 2 * np.ones((N_cells))
-    #k = 1e-2 * np.random.normal(size=N_cells)
     # Cell-fluid friction
     eta = 1e-6
-    # Cell-cell repulsion
-    a = 1e-2 * np.ones((N_cells))
-    # Cell-tissue surface tension
-    gamma = 5 * np.ones((N_cells))
     # Cell diffusion coefficient
     D = 1e-3
-    # Cell division and death rates
-    division, death = 10, 0
-    # Cell events
+
+    """
+        Cell events and simulation steps
+    """
     START, END = int(1/4 * n_steps), int(3/4 * n_steps)
     # /////////////////////////// #
     cell_events = pg.create_cell_events(START, END, division, death, n_steps)
     # /////////////////////////// #
     # Filename for the simulation
-    f = f"N_cells_{N_cells}_div_death_{division}_{death}_steps_{n_steps}_bg_{bg}"
-
+    f = f"N_cells_{N_cells}_div_death_{division}_{death}_steps_{n_steps}_bg_{geometry}"
+    
     # Welcome title
     welcome_title()
 
+    """  Initial conditions from file  """
+    import h5py
+
+    filename = "tissue_regeneration.hdf5"
+
+    with h5py.File("data/" + filename, 'r') as fname:
+        X0 = fname['cell_positions'][:]
+    
+    """  //////////////////////////////  """
+    
     # Initial cell positions
-    X0 = pg.sphere(N_cells)
+    #X0 = 0.5 * pg.sphere(N_cells)
 
     # Check which type of simulation to run based on command-line arguments
     if args.type == 'realtime':

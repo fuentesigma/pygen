@@ -95,9 +95,13 @@ class CellSimulation:
                                                                         self.step,
                                                                         self.cell_event_idx, 
                                                                         self.cell_events)
+        # Update cell positions
         self.cells.set_data(self.X, size=400, edge_width=10, face_color=CELL_COLOR, edge_color=CELL_COLOR)
+
         # Add orientation arrow
         U = self.X / np.linalg.norm(self.X)
+        
+        # Update orientation arrow
         self.orientation.set_data(np.stack((self.X, self.X + U), axis=1), color=ARROW_COLOR)
 
         # Print progress

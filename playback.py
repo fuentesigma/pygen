@@ -62,7 +62,11 @@ class Evolution:
             self.data = f['cell_positions'][:]
         
     def simulation(self, t):
-        return self.data[t]
+        cells = self.data[t]
+        # Identify and remove cells with coordinates (0, 0, 0)
+        idx = np.where(np.linalg.norm(cells, axis=1) < 1e-6)[0]
+        cells = np.delete(cells, idx, axis=0)
+        return cells
     
     def update(self, event):
         r = self.simulation(self.t)
@@ -75,8 +79,12 @@ class Evolution:
     
     def movie(self, event):
         self.update(event)
+        # Record frames
+        #image = self.canvas.canvas.render()
+        #self.writer.append(image)
+        # Update canvas
         self.writer.append(self.canvas.render(alpha=True))
-        
+        # Step forward
         if self.t+1 == self.n_steps:
             self.writer.close()
 
@@ -85,8 +93,7 @@ class Evolution:
             timer = app.Timer(interval=0.01, connect=self.movie, start=True, iterations=self.n_steps)
         else:
             timer = app.Timer(interval=0.01, connect=self.update, start=True, iterations=self.n_steps)
-        
-        #timer.events.stop.connect(lambda x: app.quit())
+        timer.events.stop.connect(lambda x: app.quit())
         self.canvas.canvas.app.run()
 
 def progressbar(j, count, prefix="", size=30, out=sys.stdout):
