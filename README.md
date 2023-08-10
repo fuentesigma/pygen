@@ -80,7 +80,7 @@ Adjust these parameters as needed to fit your specific requirements.
 
 ## Example
 
-Within runme.py tweak these parameters
+Edit the `runme.py` file, then tweak these parameters:
 
 ```python
     l0 = 1e-2
