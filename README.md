@@ -69,11 +69,12 @@ Within `runme.py`, users can adjust several parameters for more refined simulati
     """ 
         Adjustable parameters for the simulation
     """
-    l0 = 1e-2                         # Cell-cell equilibrium distance
-    k = 1e-2 * np.ones((N_cells))     # Cell-cell adhesion
     a = 1e-2 * np.ones((N_cells))     # Cell-cell repulsion
-    gamma = 1 * np.ones((N_cells))    # Cell-tissue surface tension
-    division, death = 100, 50         # Integer values for cell divisions & deaths
+    k = 1e-2 * np.ones((N_cells))     # Cell-cell adhesion
+    l0 = 1e-2                         # Cell-cell equilibrium distance
+    gamma = 1.0 * np.ones((N_cells))  # Cell-tissue surface tension
+    division = 100                    # Integer values for cell divisions
+    death = 50                        # Integer values for cell deaths
 ```
 
 Adjust these parameters as needed to fit your specific requirements.
@@ -83,11 +84,12 @@ Adjust these parameters as needed to fit your specific requirements.
 Edit the `runme.py` file, then tweak these parameters:
 
 ```python
-    l0 = 1e-2
-    k = 1e-2 * np.ones((N_cells))
     a = 1e-2 * np.ones((N_cells))
-    gamma = 1 * np.ones((N_cells))
-    division, death = 100, 50
+    k = 1e-2 * np.ones((N_cells))
+    l0 = 1e-2
+    gamma = 1.0 * np.ones((N_cells))
+    division = 100
+    death = 50
 ```
 
 Open a terminal window, go to the folder's project and execute the following command line:
