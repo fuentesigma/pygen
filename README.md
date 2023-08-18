@@ -102,7 +102,7 @@ This will execute a simulation file containing 500 cells evolving over a foil ba
 
 For any further queries or issues, feel free to open an issue on this repository or contact the maintainer.
 
-jesus [dot] fuentes [at] uni [dot] [Luxembourg ccTLD]
+jesus [dot] fuentes [at] uni [dot] lu
 
 
 
