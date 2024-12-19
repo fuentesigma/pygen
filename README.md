@@ -15,7 +15,7 @@ Ensure you have the following packages installed on a python virtual environment
 
 You can typically install these using pip, for instance:
 
-`pip install numpy scipy h5py imageio vispy etc`
+`pip install numpy scipy h5py vispy etc`
 
 
 ## Codebase
