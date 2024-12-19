@@ -1,0 +1,6 @@
+dt = 1e-06, Time = 68426.9718708992 seconds
+dt = 1e-05, Time = 7407.831753492355 seconds
+dt = 0.0001, Time = 728.9615163803101 seconds
+dt = 0.001, Time = 39.63040065765381 seconds
+dt = 0.01, Time = 3.845916986465454 seconds
+dt = 0.1, Time = 0.7835907936096191 seconds
