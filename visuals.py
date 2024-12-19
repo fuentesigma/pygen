@@ -35,7 +35,7 @@ class Canvas:
         self.view = self.canvas.central_widget.add_view()
         self.view.camera = 'turntable'
         self.view.camera.fov = 45
-        self.view.camera.distance = 4
+        self.view.camera.distance = 100
 
         self.scatter = visuals.Markers(
             scaling=True,

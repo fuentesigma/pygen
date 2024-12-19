@@ -85,6 +85,8 @@ def compute_geometric_forces(X, S_tree, S_points, gamma):
 def compute_elastic_forces_parallel(X, k, l0, neighbors_list):
     N = X.shape[0]
     forces = np.zeros_like(X)
+    pairwise_forces = []
+    pair_indices = []
     for i in prange(N):
         xi = X[i]
         k_i = k[i]
@@ -93,10 +95,13 @@ def compute_elastic_forces_parallel(X, k, l0, neighbors_list):
         for idx in neighbors:
             if i != idx:
                 xj = X[idx]
-                force = elastic_force(xi, xj, k_i, l0)
-                force_i += force
+                fij = elastic_force(xi, xj, k_i, l0)
+                force_i += fij
+                # Store pairwise force and indices
+                pairwise_forces.append(fij)
+                pair_indices.append((i, idx))
         forces[i] = force_i
-    return forces
+    return forces, pairwise_forces, pair_indices
 
 # Generate the cell events, if any, or leave the list empty
 def create_cell_events(start, end, n_divisions, n_deaths, n_steps):
@@ -206,10 +211,8 @@ def run_simulation(X0, S, params, dt, n_steps, cell_events, filename):
     # Create the HDF5 file
     f = h5py.File(filename + '.hdf5', 'w')
     # Create an empty resizable dataset to store the cell positions
-    # Maximum shape: (unlimited steps, unlimited cells, 3 coordinates)
-    maxshape = (None, None, 3)
-    dset = f.create_dataset("cell_positions", (1, X.shape[0], 3), maxshape=maxshape, dtype='f')
-    #   ////////////////////////////////////////////////////////////
+    dset = f.create_dataset("cell_positions", (1, X.shape[0], 3), maxshape=(None, None, 3), dtype='f')
+    # ////////////////////////////////////////////////////////////
     start_time = time.time()
     # Time integration loop
     for step in range(n_steps):
@@ -217,20 +220,20 @@ def run_simulation(X0, S, params, dt, n_steps, cell_events, filename):
         X, params = handle_cell_events(X, params, cell_events, step)
         # Unpack updated parameters
         k, gamma, control_strength = params['k'], params['gamma'], params['control_strength']
-        # Assuming l0 and D remain constants
+        # Here l0 and D remain constants
         l0, D = params['l0'], params['D']
         # Number of cells at this time step
         N = len(X)
-        # Resize the dataset to accommodate the new data
+        # Resize the datasets to accommodate the new data
         dset.resize((step + 1, N, 3))
         # Build KDTree for particle interactions
         tree = KDTree(X)
-        # Initialize forces
+        # Initialise forces
         forces = np.zeros_like(X)
         # Precompute the neighbour indices for all particles
         neighbors_list = tree.query_ball_point(X, r=l0 * 1.5)
         # Compute elastic forces in parallel
-        elastic_forces = compute_elastic_forces_parallel(X, k, l0, neighbors_list)
+        elastic_forces, pairwise_forces, pair_indices = compute_elastic_forces_parallel(X, k, l0, neighbors_list)
         forces += elastic_forces
         # Compute geometric forces and normals
         geometric_forces, normals = compute_geometric_forces(X, S_tree, S, gamma)
@@ -251,8 +254,28 @@ def run_simulation(X0, S, params, dt, n_steps, cell_events, filename):
         params = optimise_parameters(X, S_tree, S, params)
         # Store the current positions in the HDF5 file
         dset[step] = X
-        #   ////////////////////////////////////////////////////////////
-        #  Compute elapsed time, and estimated remaining time
+        # Compute stress tensors
+        stress_tensors = np.zeros((N, 3, 3))
+        for (i, j), fij in zip(pair_indices, pairwise_forces):
+            rij = X[j] - X[i]
+            stress_contribution = np.outer(fij, rij)
+            stress_tensors[i] += stress_contribution
+        # Divide by effective volume (set V_i = 1.0 for simplicity)
+        stress_tensors /= 1.0
+        # Compute pressures
+        pressures = -np.trace(stress_tensors, axis1=1, axis2=2) / 3.0
+        # Resize stress and pressure datasets if necessary
+        if step == 0:
+            stress_dset = f.create_dataset("stress_tensors", (1, N, 3, 3), maxshape=(None, None, 3, 3), dtype='f')
+            pressure_dset = f.create_dataset("pressures", (1, N), maxshape=(None, None), dtype='f')
+        else:
+            stress_dset.resize((step + 1, N, 3, 3))
+            pressure_dset.resize((step + 1, N))
+        # Store stress tensors and pressures
+        stress_dset[step] = stress_tensors
+        pressure_dset[step] = pressures
+        # ////////////////////////////////////////////////////////////
+        # Compute elapsed time and estimated remaining time
         elapsed_time = time.time() - start_time
         progress = (step + 1) / n_steps
         remaining_time = (elapsed_time / progress) - elapsed_time
@@ -269,6 +292,11 @@ def run_simulation(X0, S, params, dt, n_steps, cell_events, filename):
         )
         # Apply a flush to the screen
         sys.stdout.flush()
+    # Save the final parameters to the HDF5 file
+    param_group = f.create_group('final_parameters')
+    param_group.create_dataset('k', data=params['k'])
+    param_group.create_dataset('gamma', data=params['gamma'])
+    param_group.create_dataset('control_strength', data=params['control_strength'])
     # Close the file
     f.close()
     return
@@ -293,7 +321,7 @@ def welcome_title():
     "                                                  \n"
     "==================================================\n"
     "   PyGen                                          \n"
-    "   github.com/fuentesigma                         \n"
+    "   github.com/fuentesigma/pygen                   \n"
     "   Let's start the simulation...                  \n"
     "==================================================\n"
     "")
@@ -302,18 +330,28 @@ def main(N_cells=100, n_steps=1000, dt=1e-2, geometry='sphere', division=0, deat
     # Define seed for reproducibility
     np.random.seed(42)
 
-    # Initial cell positions
-    X0 = 0.5 * initial_positions(N_cells)
+    if geometry == 'Drosophila':
+        # Load initial cell positions from CSV file
+        X0 = np.loadtxt("drosophila/XYZ_Coordinates_T20.csv", delimiter=",")
 
-    # Load background geometry
-    S = np.loadtxt("data/" + str(geometry) + ".txt")
+        # Number of cells
+        N_cells = X0.shape[0]
+
+        # Load background geometry from CSV file
+        S = np.loadtxt("drosophila/XYZ_Coordinates_T80.csv", delimiter=",")
+    else:
+        # Initial cell positions
+        X0 = 0.5 * initial_positions(N_cells)
+
+        # Load background geometry
+        S = np.loadtxt("data/" + str(geometry) + ".txt")
 
     # Initialise cell parameters with some variability
-    k = np.random.uniform(0.5, 1.5, size=N_cells)
-    gamma = np.random.uniform(0.5, 1.5, size=N_cells)
-    control_strength = np.random.uniform(0.5, 1.5, size=N_cells)
+    k = np.random.uniform(1e-2, 2, size=N_cells)
+    gamma = np.random.uniform(1e-2, 2, size=N_cells)
+    control_strength = np.random.uniform(1e-2, 2, size=N_cells)
     l0 = 1e-2
-    D = 1e-5
+    D = 1e-4
 
     # Pack parameters into a dictionary
     params = {'k': k, 'l0': l0, 'gamma': gamma, 'D': D, 'control_strength': control_strength}
@@ -338,7 +376,7 @@ def main(N_cells=100, n_steps=1000, dt=1e-2, geometry='sphere', division=0, deat
 
 # Run main function
 if __name__ == "__main__":
-    main(N_cells=50, n_steps=1000, geometry='sphere')
+    main(n_steps=5000, geometry='Drosophila')
     #   //////////////
     #      _____ 
     #     /     \
