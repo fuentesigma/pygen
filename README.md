@@ -35,22 +35,24 @@ To use PyGen, follow these steps:
 2. Navigate to the project directory.
 3. Run the simulation using the following command:
 
-> python pygen.py
+```python
+python pygen.py
+```
 
-By default, the code runs a simulation with predefined parameters, for example n_steps=5000 and geometry='Drosophila' as shown in the if `__name__ == "__main__":` block.
+By default, the code runs a simulation with predefined parameters, for example `n_steps=5000` and `geometry='Drosophila'` as shown in the `if __name__ == "__main__":` block.
 
 ### Parameters:
 
-All parameters are defined within the `main()` function. To adjust them, open the `pygen.py` file and modify the call to `main()` at the bottom of the script:
-
-- **simulation_type**: Determines the mode of the simulation. 
-    - `realtime`: Visualize the evolution in real time.
-    - `offline`: For larger simulations. Records the evolution in a file before visualization.
-    - `file`: To visualize pre-recorded simulations.
-  
-- **initial_number_of_cells**: The initial number of cells in the ensemble. (Integer value.)
-  
-- **time_steps**: Define the number of simulation steps. (Integer value.)
+```python
+main(
+    N_cells=200,      # Change the initial number of cells
+    n_steps=10000,    # Change the number of simulation steps
+    dt=1e-3,          # Adjust the time step
+    geometry='sphere',# Choose a different background geometry
+    division=100,     # Set how many cell division events to occur
+    death=50          # Set how many cell death events to occur
+)
+```
 
 - **geometric_background**: Specifies the target geometry of the tissue architecture. Options include:
     - `sphere`
@@ -59,46 +61,18 @@ All parameters are defined within the `main()` function. To adjust them, open th
     - `wknot`
     - `cylinder`
     - `beltrami`
-    - `cylinder`
 
 Alternatively, you can import or generate your own point clouds utilising the notebook `generate_points.ipynb` within tools.
 
-### Tweaking Additional Parameters:
-
-Within `runme.py`, users can adjust several parameters for more refined simulations:
-
-```python
-    """ 
-        Adjustable parameters for the simulation
-    """
-    a = 1e-2 * np.ones((N_cells))     # Cell-cell repulsion
-    k = 1e-2 * np.ones((N_cells))     # Cell-cell adhesion
-    l0 = 1e-2                         # Cell-cell equilibrium distance
-    gamma = 1.0 * np.ones((N_cells))  # Cell-tissue surface tension
-    division = 100                    # Integer values for cell divisions
-    death = 50                        # Integer values for cell deaths
-```
-
-Adjust these parameters as needed to fit your specific requirements.
-
 ## Example
 
-Edit the `runme.py` file, then tweak these parameters:
+To run the simulation with a new configuration, simply edit the `main()` call as described above and execute:
 
 ```python
-    a = 1e-2 * np.ones((N_cells))
-    k = 1e-2 * np.ones((N_cells))
-    l0 = 1e-2
-    gamma = 1.0 * np.ones((N_cells))
-    division = 100
-    death = 50
+python pygen.py
 ```
 
-Open a terminal window, go to the folder's project and execute the following command line:
-
->  python runme.py
-
-This will execute a simulation file containing 500 cells evolving over a foil background. In the simulation, 100 cells will be divided, while 50 of them will be killed.
+For example, changing `N_cells=500`, `division=100`, and `death=50` would simulate a scenario where 500 cells evolve over time, with 100 division events and 50 death events.
 
 ### Maintenance
 
