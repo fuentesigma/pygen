@@ -4,14 +4,12 @@ PyGen is a dynamic cellular simulation tool designed for modelling cellular inte
 
 ## Requirements
 
-Ensure you have the following packages installed:
+Ensure you have the following packages installed on a python virtual environment:
 
 - numpy
 - scipy
 - h5py
-- imageio
 - vispy
-- python 3
 - torch
 - numba
 
