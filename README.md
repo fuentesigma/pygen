@@ -12,21 +12,20 @@ Ensure you have the following packages installed:
 - imageio
 - vispy
 - python 3
+- torch
+- numba
 
-You can typically install these using pip:
+You can typically install these using pip, for instance:
 
-`pip install numpy scipy h5py imageio vispy`
+`pip install numpy scipy h5py imageio vispy etc`
 
 
 ## Codebase
 
-The project comprises four main files:
+The project comprises two main files:
 
-
-1. `runme.py`: The primary script for executing simulations.
-2. `pygen.py`: The central engine fo the simulation.
-3. `simulation.py`: Designed for executing visualisations in real time.
-4. `playback.py`: It contains a class for visualising evolution through files.
+1. `pygen.py`: The primary script for executing simulations.
+2. `visuals.py`: Designed for executing visualisations either in real time or offline.
 
 ## Usage
 
@@ -36,10 +35,13 @@ To use PyGen, follow these steps:
 2. Navigate to the project directory.
 3. Run the simulation using the following command:
 
-> python runme.py --type [simulation_type] --C [initial_number_of_cells] --S [time_steps] --B [geometric_background]
+> python pygen.py
 
+By default, the code runs a simulation with predefined parameters, for example n_steps=5000 and geometry='Drosophila' as shown in the if `__name__ == "__main__":` block.
 
 ### Parameters:
+
+All parameters are defined within the `main()` function. To adjust them, open the `pygen.py` file and modify the call to `main()` at the bottom of the script:
 
 - **simulation_type**: Determines the mode of the simulation. 
     - `realtime`: Visualize the evolution in real time.
@@ -94,7 +96,7 @@ Edit the `runme.py` file, then tweak these parameters:
 
 Open a terminal window, go to the folder's project and execute the following command line:
 
->  python runme.py --type file --C 500 --S 3000 --B foil
+>  python runme.py
 
 This will execute a simulation file containing 500 cells evolving over a foil background. In the simulation, 100 cells will be divided, while 50 of them will be killed.
 
